@@ -35,7 +35,7 @@ public class StadiumJdbcDao implements StadiumDao {
     @Override
     public List<Stadium> getAll() {
         LOG.trace("Obteniendo todos los estadios");
-        return jdbcTemplate.query("select * from stadiums", new StadiumMapper(jdbcTemplate));
+        return jdbcTemplate.query("select * from stadiums", new StadiumMapper());
     }
 
     @Override
@@ -43,9 +43,21 @@ public class StadiumJdbcDao implements StadiumDao {
         LOG.trace("Obteniendo estadio con id {}", id);
         try {
             return jdbcTemplate.queryForObject("select * from stadiums where id = ?", new Object[]{id},
-                    new StadiumMapper(jdbcTemplate));
+                    new StadiumMapper());
         } catch (EmptyResultDataAccessException noResult) {
             LOG.info("No existe un estadio con id {}", id);
+            return null;
+        }
+    }
+
+    @Override
+    public Stadium getByTeamId(int teamId) {
+        LOG.trace("Obteniendo estadio del equipo con id {}", teamId);
+        try {
+            return jdbcTemplate.queryForObject("select * from stadiums where team_id = ?", new Object[]{teamId},
+                    new StadiumMapper());
+        } catch (EmptyResultDataAccessException noResult) {
+            LOG.info("No existe el estadio del equipo con id {}", teamId);
             return null;
         }
     }
@@ -55,7 +67,8 @@ public class StadiumJdbcDao implements StadiumDao {
 
         LOG.trace("Creando el estadio {}", stadium);
 
-        final String sql = "insert into stadiums (name, capacity, city) values (?, ?, ?)";
+        validateTeamId(stadium.getTeamId());
+        final String sql = "insert into stadiums (name, capacity, city, team_id) values (?, ?, ?, ?)";
         final KeyHolder holder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(new PreparedStatementCreator() {
@@ -67,6 +80,7 @@ public class StadiumJdbcDao implements StadiumDao {
                 ps.setString(1, stadium.getName());
                 ps.setInt(2, stadium.getCapacity());
                 ps.setString(3, stadium.getCity());
+                ps.setInt(4, stadium.getTeamId());
                 return ps;
             }
         }, holder);
@@ -80,5 +94,14 @@ public class StadiumJdbcDao implements StadiumDao {
     public void delete(int stadiumId) {
         LOG.trace("Eliminando estadio con id {}", stadiumId);
         jdbcTemplate.update("delete from stadiums where id = ?", stadiumId);
+    }
+
+    private void validateTeamId(int teamId) {
+        int total = jdbcTemplate.queryForObject("select count(*) from teams where id = ?", new Object[]{teamId}, Integer.class);
+        if (total != 1) {
+            final String msg = "No existe un equipo con id " + teamId;
+            LOG.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
     }
 }

@@ -35,16 +35,16 @@ public class TeamJdbcDao implements TeamDao {
     @Override
     public List<Team> getAll() {
         LOG.trace("Obteniendo todos los equipos");
-        return jdbcTemplate.query("select t.*, s.id as stadium_id, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id order by t.ranking_position ASC",
-                new TeamMapper(jdbcTemplate));
+        return jdbcTemplate.query("select * from teams order by ranking_position ASC",
+                new TeamMapper());
     }
 
     @Override
     public Team getById(int id) {
         LOG.trace("Obteniendo el equipo con id {}", id);
         try {
-            return jdbcTemplate.queryForObject("select t.*, s.id as stadium_id, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id and t.id = ?",
-                    new Object[]{id}, new TeamMapper(jdbcTemplate));
+            return jdbcTemplate.queryForObject("select * from teams where id = ?",
+                    new Object[]{id}, new TeamMapper());
         } catch (EmptyResultDataAccessException noResult) {
             LOG.info("No existe un equipo con id {}", id);
             return null;
@@ -55,7 +55,7 @@ public class TeamJdbcDao implements TeamDao {
     public int persist(final Team team) {
         LOG.trace("Creando el equipo {}", team);
 
-        final String sql = "insert into teams (name, foundation_year, ranking_position, stadium_id) values (?, ?, ?, ?)";
+        final String sql = "insert into teams (name, foundation_year, ranking_position) values (?, ?, ?)";
         final KeyHolder holder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(new PreparedStatementCreator() {
@@ -67,7 +67,6 @@ public class TeamJdbcDao implements TeamDao {
                 ps.setString(1, team.getName());
                 ps.setInt(2, team.getFoundationYear());
                 ps.setInt(3, team.getRankingPosition());
-                ps.setInt(4, getStadiumId(team.getStadium().getName()));
                 return ps;
             }
         }, holder);
@@ -83,31 +82,4 @@ public class TeamJdbcDao implements TeamDao {
         jdbcTemplate.update("delete from teams where id = ?", teamId);
     }
 
-    private int getStadiumId(String stadiumName) {
-        LOG.trace("Obteniendo id del estadio con nombre {}", stadiumName);
-        try {
-            int stadiumId = jdbcTemplate.queryForObject("select id from stadiums where name = ?",
-                    new Object[]{stadiumName}, Integer.class);
-            validateStadiumId(stadiumId);
-            return stadiumId;
-        } catch (EmptyResultDataAccessException noResultException) {
-            final String msg = "No existe un estadio con nombre " + stadiumName;
-            LOG.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-    }
-
-    private void validateStadiumId(int stadiumId) {
-        if (isAnyTeamWithTheSameStadiumId(stadiumId)) {
-            final String msg = "Ya existe un equipo que juega en el estadio con id " + stadiumId;
-            LOG.error(msg);
-            throw new IllegalArgumentException(msg);
-        }
-    }
-
-    private boolean isAnyTeamWithTheSameStadiumId(int stadiumId) {
-        int teamConunt = jdbcTemplate.queryForObject("select count(*) from teams where stadium_id = ?",
-                new Object[]{stadiumId}, Integer.class);
-        return teamConunt > 0;
-    }
 }

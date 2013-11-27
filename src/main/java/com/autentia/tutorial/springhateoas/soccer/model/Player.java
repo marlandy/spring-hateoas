@@ -3,15 +3,16 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.hateoas.ResourceSupport;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
-@XmlType(propOrder = { "id", "name", "goals", "age", "country", "currentTeam"})
-public class Player {
+@XmlType(propOrder = {"playerId", "name", "goals", "age", "country", "teamId"})
+public class Player extends ResourceSupport {
 
-    private int id;
+    private int playerId;
 
     private String name;
 
@@ -21,14 +22,14 @@ public class Player {
 
     private String country;
 
-    private TeamShortInfo currentTeam;
+    private int teamId;
 
-    public int getId() {
-        return id;
+    public int getPlayerId() {
+        return playerId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setPlayerId(int playerId) {
+        this.playerId = playerId;
     }
 
     public String getName() {
@@ -37,14 +38,6 @@ public class Player {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public TeamShortInfo getCurrentTeam() {
-        return currentTeam;
-    }
-
-    public void setCurrentTeam(TeamShortInfo currentTeam) {
-        this.currentTeam = currentTeam;
     }
 
     public int getAge() {
@@ -71,6 +64,14 @@ public class Player {
         this.goals = goals;
     }
 
+    public int getTeamId() {
+        return teamId;
+    }
+
+    public void setTeamId(int teamId) {
+        this.teamId = teamId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -81,24 +82,24 @@ public class Player {
         }
 
         final Player other = (Player) o;
-        return new EqualsBuilder().append(this.id, other.getId()).isEquals();
+        return new EqualsBuilder().append(this.playerId, other.getPlayerId()).isEquals();
 
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this.id).hashCode();
+        return new HashCodeBuilder().append(this.playerId).hashCode();
     }
 
     @Override
     public String toString() {
         return "Player{" +
-                "id=" + id +
+                "id=" + playerId +
                 ", name='" + name + '\'' +
-                ", currentTeam=" + currentTeam +
+                ", goals=" + goals +
                 ", age=" + age +
                 ", country='" + country + '\'' +
-                ", goals=" + goals +
+                ", teamId=" + teamId +
                 '}';
     }
 }

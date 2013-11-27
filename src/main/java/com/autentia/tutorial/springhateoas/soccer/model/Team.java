@@ -2,18 +2,16 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.hateoas.ResourceSupport;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
-import java.util.List;
 
 @XmlRootElement
-@XmlType(propOrder = { "id", "name", "foundationYear", "rankingPosition", "stadium", "players"})
-public class Team {
+@XmlType(propOrder = { "teamId", "name", "foundationYear", "rankingPosition"})
+public class Team extends ResourceSupport {
 
-    private int id;
+    private int teamId;
 
     private String name;
 
@@ -21,16 +19,12 @@ public class Team {
 
     private int rankingPosition;
 
-    private StadiumShortInfo stadium;
-
-    private List<PlayerShortInfo> players;
-
-    public int getId() {
-        return id;
+    public int getTeamId() {
+        return teamId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setTeamId(int id) {
+        this.teamId = id;
     }
 
     public String getName() {
@@ -57,24 +51,6 @@ public class Team {
         this.rankingPosition = rankingPosition;
     }
 
-    public StadiumShortInfo getStadium() {
-        return stadium;
-    }
-
-    public void setStadium(StadiumShortInfo stadium) {
-        this.stadium = stadium;
-    }
-
-    @XmlElementWrapper(name = "players")
-    @XmlElement(name = "player")
-    public List<PlayerShortInfo> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(List<PlayerShortInfo> players) {
-        this.players = players;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -85,30 +61,22 @@ public class Team {
         }
 
         final Team other = (Team) o;
-        return new EqualsBuilder().append(this.id, other.getId()).isEquals();
+        return new EqualsBuilder().append(this.teamId, other.getTeamId()).isEquals();
 
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this.id).hashCode();
+        return new HashCodeBuilder().append(this.teamId).hashCode();
     }
 
     @Override
     public String toString() {
-        final StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("Team{id=").append(id).append(", name='").append(name).
-                append("', foundationYear=").append(foundationYear).append(", rankingPosition=").
-                append(rankingPosition).append(", stadium=").append(stadium).append(", players={");
-        if (players != null) {
-            for (int i = 0; i < players.size(); i++) {
-                if (i > 0) {
-                    stringBuilder.append(", ");
-                }
-                stringBuilder.append(players.get(i));
-            }
-        }
-        stringBuilder.append("}}");
-        return stringBuilder.toString();
+        return "Team{" +
+                "id=" + teamId +
+                ", name='" + name + '\'' +
+                ", foundationYear=" + foundationYear +
+                ", rankingPosition=" + rankingPosition +
+                '}';
     }
 }

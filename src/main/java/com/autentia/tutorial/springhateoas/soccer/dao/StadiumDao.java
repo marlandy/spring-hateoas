@@ -22,6 +22,14 @@ public interface StadiumDao {
     Stadium getById(int id);
 
     /**
+     * Devuelve el estadio que cuyo team_id coincida
+     *
+     * @param teamId identificador del equipo
+     * @return estadio
+     */
+    Stadium getByTeamId(int teamId);
+
+    /**
      * Da de alta un estadio
      *
      * @param stadium a dar de alta

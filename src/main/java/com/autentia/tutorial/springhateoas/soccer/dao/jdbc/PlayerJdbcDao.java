@@ -36,26 +36,34 @@ public class PlayerJdbcDao implements PlayerDao {
     @Override
     public List<Player> getAll() {
         LOG.trace("Obteniendo todos los jugadores");
-        return jdbcTemplate.query("select p.*, t.id as team_id, t.name as team_name from players as p, teams as t where p.team_id = t.id order by p.name ASC",
+        return jdbcTemplate.query("select * from players order by name ASC",
                 new PlayerMapper());
 
     }
 
     @Override
-    public Player getById(int id) {
-        LOG.trace("Obteniendo jugador con id {}", id);
+    public Player getById(int playerId, int teamId) {
+        LOG.trace("Obteniendo jugador con id {} que juega en el equipo con id {}", playerId, teamId);
         try {
-            return jdbcTemplate.queryForObject("select p.*, t.name as team_name from players as p, teams as t where p.team_id = t.id and p.id = ?",
-                    new Object[]{id}, new PlayerMapper());
+            return jdbcTemplate.queryForObject("select * from players where id = ? and team_id = ?",
+                    new Object[]{playerId, teamId}, new PlayerMapper());
         } catch (EmptyResultDataAccessException noResult) {
-            LOG.info("No existe un jugador con id {}", id);
+            LOG.info("No existe un jugador con id {} que juegue en el equipo", playerId, teamId);
             return null;
         }
     }
 
     @Override
+    public List<Player> getByTeamId(int teamId) {
+        LOG.trace("Obteniendo todos los jugadores del equipo con id " + teamId);
+        return jdbcTemplate.query("select * from players where team_id = ?", new Object[]{teamId},
+                new PlayerMapper());
+    }
+
+    @Override
     public int persist(final Player player) {
         LOG.trace("Creando el jugador {}", player);
+        validateTeamId(player.getTeamId());
         final String sql = "insert into players (name, age, country, goals, team_id) values (?, ?, ?, ?, ?)";
         final KeyHolder holder = new GeneratedKeyHolder();
 
@@ -69,7 +77,7 @@ public class PlayerJdbcDao implements PlayerDao {
                 ps.setInt(2, player.getAge());
                 ps.setString(3, player.getCountry());
                 ps.setInt(4, player.getGoals());
-                ps.setInt(5, getCurrentTeamIdByTeamName(player.getCurrentTeam().getName()));
+                ps.setInt(5, player.getTeamId());
                 return ps;
             }
         }, holder);
@@ -85,13 +93,10 @@ public class PlayerJdbcDao implements PlayerDao {
         jdbcTemplate.update("delete from players where id = ?", playerId);
     }
 
-    private int getCurrentTeamIdByTeamName(String teamName) {
-        LOG.trace("Obteniendo id del equipo con nombre {}", teamName);
-        try {
-            return jdbcTemplate.queryForObject("select id from teams where name = ?",
-                    new Object[]{teamName}, Integer.class);
-        } catch (EmptyResultDataAccessException noResultException) {
-            final String msg = "No existe un equipo con nombre " + teamName;
+    private void validateTeamId(int teamId) {
+        int total = jdbcTemplate.queryForObject("select count(*) from teams where id = ?", new Object[]{teamId}, Integer.class);
+        if (total != 1) {
+            final String msg = "No existe un equipo con id " + teamId;
             LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }

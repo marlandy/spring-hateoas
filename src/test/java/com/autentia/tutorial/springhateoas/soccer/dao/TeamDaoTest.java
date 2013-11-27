@@ -1,7 +1,5 @@
 package com.autentia.tutorial.springhateoas.soccer.dao;
 
-import com.autentia.tutorial.springhateoas.soccer.model.PlayerShortInfo;
-import com.autentia.tutorial.springhateoas.soccer.model.StadiumShortInfo;
 import com.autentia.tutorial.springhateoas.soccer.model.Team;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,23 +22,17 @@ public class TeamDaoTest {
     public void shouldReturnAllTeams() {
         final List<Team> teams = teamDao.getAll();
         assertNotNull(teams);
-        assertEquals(3, teams.size());
+        assertEquals(4, teams.size());
     }
 
     @Test
     public void shouldReturnATeamById() {
         final Team team = teamDao.getById(5000);
         assertNotNull(team);
-        assertEquals(5000, team.getId());
+        assertEquals(5000, team.getTeamId());
         assertEquals("Real Madrid C.F.", team.getName());
         assertEquals(1902, team.getFoundationYear());
         assertEquals(1, team.getRankingPosition());
-        assertEquals("Santiago Bernabeu", team.getStadium().getName());
-
-        final List<PlayerShortInfo> teamPlayers = team.getPlayers();
-        assertNotNull(teamPlayers);
-        assertEquals(3, teamPlayers.size());
-        assertEquals("Cristiano Ronaldo", teamPlayers.get(0).getName());
 
     }
 
@@ -53,42 +45,24 @@ public class TeamDaoTest {
     @Test
     public void shouldPersistATeam() {
         final Team team = new Team();
-        team.setName("Málaga C.F.");
-        team.setFoundationYear(1948);
+        team.setName("Valencia C.F.");
+        team.setFoundationYear(1917);
         team.setRankingPosition(7);
-        team.setStadium(new StadiumShortInfo("La Rosaleda"));
 
         int teamId = teamDao.persist(team);
         final Team teamFromDB = teamDao.getById(teamId);
-        assertEquals(teamId, teamFromDB.getId());
+        assertEquals(teamId, teamFromDB.getTeamId());
         assertEquals(team.getName(), teamFromDB.getName());
         assertEquals(team.getFoundationYear(), teamFromDB.getFoundationYear());
         assertEquals(team.getRankingPosition(), teamFromDB.getRankingPosition());
-        assertEquals(team.getStadium().getName(), teamFromDB.getStadium().getName());
 
         deleteTeamAndValidateDeletion(teamFromDB);
     }
 
-    @Test
-    public void shouldThrownExceptionIfStadiumNameIsNotValid() {
-        final Team team = new Team();
-        team.setName("Real Madrid Castilla");
-        team.setFoundationYear(1950);
-        team.setRankingPosition(7);
-        team.setStadium(new StadiumShortInfo("ESTADIO INEXISTENTE"));
-
-        try {
-            teamDao.persist(team);
-            fail("El test debió fallar ya que no existe el estadio");
-        } catch (IllegalArgumentException iae) {
-            assertEquals("No existe un estadio con nombre ESTADIO INEXISTENTE", iae.getMessage());
-        }
-    }
-
     private void deleteTeamAndValidateDeletion(Team team) {
-        teamDao.delete(team.getId());
-        assertNull(teamDao.getById(team.getId()));
-        assertEquals(3, teamDao.getAll().size());
+        teamDao.delete(team.getTeamId());
+        assertNull(teamDao.getById(team.getTeamId()));
+        assertEquals(4, teamDao.getAll().size());
     }
 
 }

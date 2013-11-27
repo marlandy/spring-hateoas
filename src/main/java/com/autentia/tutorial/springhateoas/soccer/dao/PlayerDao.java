@@ -14,12 +14,21 @@ public interface PlayerDao {
     List<Player> getAll();
 
     /**
-     * Devuelve el jugador que coincida con el id
+     * Devuelve un jugador por id jugador e id equip
      *
-     * @param id identificador del jugador
+     * @param playerId identificador del jugador
+     * @param teamId identificador del equipo en el que juega
      * @return jugador
      */
-    Player getById(int id);
+    Player getById(int playerId, int teamId);
+
+    /**
+     * Devuelve los jugadores cuyo equipo coincida con el parámetro
+     *
+     * @param teamId identificador del equipo del jugador
+     * @return jugador
+     */
+    List<Player> getByTeamId(int teamId);
 
     /**
      * Da de alta un jugador

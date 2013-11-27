@@ -4,9 +4,7 @@ import com.autentia.tutorial.springhateoas.soccer.api.exception.InvalidInputData
 import com.autentia.tutorial.springhateoas.soccer.api.exception.ResourceNotFoundException;
 import com.autentia.tutorial.springhateoas.soccer.dao.PlayerDao;
 import com.autentia.tutorial.springhateoas.soccer.model.Player;
-import com.autentia.tutorial.springhateoas.soccer.model.PlayerShortInfo;
 import com.autentia.tutorial.springhateoas.soccer.model.Players;
-import com.autentia.tutorial.springhateoas.soccer.model.TeamShortInfo;
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +23,6 @@ import static org.springframework.hateoas.mvc.ControllerLinkBuilder.linkTo;
 import static org.springframework.hateoas.mvc.ControllerLinkBuilder.methodOn;
 
 @Controller
-@RequestMapping(value = "/players")
 public class PlayerController {
 
     private static final Logger LOG = LoggerFactory.getLogger(PlayerController.class);
@@ -37,60 +34,65 @@ public class PlayerController {
         this.playerDao = playerDao;
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public @ResponseBody Players getAll() {
-        LOG.trace("Recibida solicitud para devolver todos los jugadores");
-        final List<Player> players = playerDao.getAll();
-        addTeamLink(players);
+    @RequestMapping(value = "/teams/{teamId}/players", method = RequestMethod.GET)
+    public @ResponseBody Players getTeamPlayers(@PathVariable int teamId) {
+        LOG.trace("Recibida solicitud para devolver todos los jugadores del equipo con id " + teamId);
+        final List<Player> players = playerDao.getByTeamId(teamId);
+        addPlayerLink(players);
         return new Players(players);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public @ResponseBody Player getById(@PathVariable int id) {
-        LOG.trace("Recibida solicitud para devolver el jugador con id {}", id);
-        final Player player = playerDao.getById(id);
+    @RequestMapping(value = "/teams/{teamId}/players/{playerId}", method = RequestMethod.GET)
+    public @ResponseBody Player getById(@PathVariable int teamId, @PathVariable int playerId) {
+        LOG.trace("Recibida solicitud para devolver el jugador con id {} que juega en el equipo con id ", playerId, teamId);
+        final Player player = playerDao.getById(playerId, teamId);
         if (player == null) {
-            LOG.info("El jugador con id {} no existe", id);
+            LOG.info("El jugador con id {} y que juega en el equipo {} no existe", playerId, teamId);
             throw new ResourceNotFoundException();
         }
-        addTeamLink(player);
+        addPlayerLink(player);
         return player;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public @ResponseBody HttpEntity<PlayerShortInfo> create(@RequestBody Player player) {
+    @RequestMapping(value = "/teams/{teamId}/players", method = RequestMethod.POST)
+    public @ResponseBody HttpEntity<Player> create(@PathVariable int teamId, @RequestBody Player player) {
 
+        player.setTeamId(teamId);
         LOG.trace("Recibida solicitud para crear el jugador {}", player);
         validateNewPlayer(player);
 
-        int newPlayerId;
         try {
-            newPlayerId = playerDao.persist(player);
+            player.setPlayerId(playerDao.persist(player));
+            LOG.info("Jugador creado correctamente {}", player);
         } catch (IllegalArgumentException iae) {
             LOG.error("No se puede crear el jugador {}", player, iae);
             throw new InvalidInputDataException("Los datos del jugador son erroneos");
         }
 
-        final PlayerShortInfo newPlayer = new PlayerShortInfo(newPlayerId, player.getName());
-        newPlayer.add(linkTo(methodOn(PlayerController.class).getById(newPlayerId)).withSelfRel());
-
-        final HttpHeaders headers = createHeadersWithResourceLocation(newPlayerId);
-        return new ResponseEntity<>(newPlayer, headers, HttpStatus.CREATED);
+        addPlayerLink(player);
+        final HttpHeaders headers = createHeadersWithResourceLocation(teamId, player.getPlayerId());
+        return new ResponseEntity<>(player, headers, HttpStatus.CREATED);
     }
 
-    private void addTeamLink(List<Player> players) {
+    private void addPlayerLink(List<Player> players) {
         if (!CollectionUtils.isEmpty(players)) {
             for (Player player : players) {
-                addTeamLink(player);
+                addPlayerLink(player);
             }
         }
     }
 
+    private void addPlayerLink(Player player) {
+        addSelfLink(player);
+        addTeamLink(player);
+    }
+
+    private void addSelfLink(Player player) {
+        player.add(linkTo(methodOn(PlayerController.class).getById(player.getTeamId(), player.getPlayerId())).withSelfRel());
+    }
+
     private void addTeamLink(Player player) {
-        final TeamShortInfo team = player.getCurrentTeam();
-        if (team != null) {
-            team.add(linkTo(methodOn(TeamController.class).getById(team.getIdTeam())).withSelfRel());
-        }
+        player.add(linkTo(methodOn(TeamController.class).getById(player.getTeamId())).withRel("team"));
     }
 
     private void validateNewPlayer(Player player) {
@@ -98,7 +100,6 @@ public class PlayerController {
         validateGoals(player.getGoals());
         validateCountry(player.getCountry());
         validateAge(player.getAge());
-        validateCurrentTeam(player.getCurrentTeam());
     }
 
     private void validateName(String name) {
@@ -133,17 +134,9 @@ public class PlayerController {
         }
     }
 
-    private void validateCurrentTeam(TeamShortInfo currentTeam) {
-        if (currentTeam == null || StringUtils.isEmpty(currentTeam.getName())) {
-            final String errorMsg = "El equipo actual del jugador es obligatorio";
-            LOG.info(errorMsg);
-            throw new InvalidInputDataException(errorMsg);
-        }
-    }
-
-    private HttpHeaders createHeadersWithResourceLocation(int playerId) {
+    private HttpHeaders createHeadersWithResourceLocation(int teamId, int playerId) {
         final HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(linkTo(methodOn(PlayerController.class).getById(playerId)).toUri());
+        headers.setLocation(linkTo(methodOn(PlayerController.class).getById(teamId, playerId)).toUri());
         return headers;
     }
 

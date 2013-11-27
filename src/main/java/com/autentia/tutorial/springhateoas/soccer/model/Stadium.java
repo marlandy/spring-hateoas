@@ -2,15 +2,16 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.springframework.hateoas.ResourceSupport;
 
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
 @XmlRootElement
-@XmlType(propOrder = { "id", "name", "capacity", "city", "team"})
-public class Stadium {
+@XmlType(propOrder = { "stadiumId", "name", "capacity", "city", "teamId"})
+public class Stadium extends ResourceSupport {
 
-    private int id;
+    private int stadiumId;
 
     private String name;
 
@@ -18,14 +19,14 @@ public class Stadium {
 
     private String city;
 
-    private TeamShortInfo team;
+    private int teamId;
 
-    public int getId() {
-        return id;
+    public int getStadiumId() {
+        return stadiumId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setStadiumId(int id) {
+        this.stadiumId = id;
     }
 
     public String getName() {
@@ -52,12 +53,12 @@ public class Stadium {
         this.city = city;
     }
 
-    public TeamShortInfo getTeam() {
-        return team;
+    public int getTeamId() {
+        return teamId;
     }
 
-    public void setTeam(TeamShortInfo team) {
-        this.team = team;
+    public void setTeamId(int teamId) {
+        this.teamId = teamId;
     }
 
     @Override
@@ -70,23 +71,23 @@ public class Stadium {
         }
 
         final Stadium other = (Stadium) o;
-        return new EqualsBuilder().append(this.id, other.getId()).isEquals();
+        return new EqualsBuilder().append(this.stadiumId, other.getStadiumId()).isEquals();
 
     }
 
     @Override
     public int hashCode() {
-        return new HashCodeBuilder().append(this.id).hashCode();
+        return new HashCodeBuilder().append(this.stadiumId).hashCode();
     }
 
     @Override
     public String toString() {
         return "Stadium{" +
-                "id=" + id +
+                "id=" + stadiumId +
                 ", name='" + name + '\'' +
                 ", capacity=" + capacity +
                 ", city='" + city + '\'' +
-                ", team=" + team +
+                ", teamId=" + teamId +
                 '}';
     }
 }
