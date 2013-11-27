@@ -25,17 +25,17 @@ public class TeamMapper implements RowMapper<Team> {
         team.setFoundationYear(rs.getInt("foundation_year"));
         team.setName(rs.getString("name"));
         team.setRankingPosition(rs.getInt("ranking_position"));
-        team.setStadium(new StadiumShortInfo(rs.getString("stadium_name")));
+        team.setStadium(new StadiumShortInfo(rs.getInt("stadium_id"), rs.getString("stadium_name")));
         team.setPlayers(getTeamPlayers(team.getId()));
         return team;
     }
 
     private List<PlayerShortInfo> getTeamPlayers(int teamId) {
-        return jdbcTemplate.query("select name from players where team_id = ?", new Object[]{teamId},
+        return jdbcTemplate.query("select id, name from players where team_id = ?", new Object[]{teamId},
                 new RowMapper<PlayerShortInfo>() {
                     @Override
                     public PlayerShortInfo mapRow(ResultSet rs, int rowNum) throws SQLException {
-                        return new PlayerShortInfo(rs.getString("name"));
+                        return new PlayerShortInfo(rs.getInt("id"), rs.getString("name"));
                     }
                 });
     }

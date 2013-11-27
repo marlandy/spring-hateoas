@@ -40,13 +40,13 @@ public class TeamTest {
         team.setFoundationYear(1902);
         team.setName("Real Madrid C.F");
         team.setRankingPosition(1);
-        team.setStadium(new StadiumShortInfo("Estadio 1"));
+        team.setStadium(new StadiumShortInfo(7, "Estadio 1"));
         final List<PlayerShortInfo> players = createPlayerList();
         team.setPlayers(players);
 
         final StringBuilder expectedString = new StringBuilder();
         expectedString.append("Team{id=").append(3).
-                append(", name='Real Madrid C.F', foundationYear=1902, rankingPosition=1, stadium=StadiumShortInfo{name='Estadio 1'}, players={");
+                append(", name='Real Madrid C.F', foundationYear=1902, rankingPosition=1, stadium=StadiumShortInfo{idStadium=7, name='Estadio 1'}, players={");
         for (int i = 0; i < players.size(); i++) {
             if (i > 0) {
                 expectedString.append(", ");

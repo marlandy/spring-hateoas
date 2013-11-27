@@ -35,7 +35,7 @@ public class TeamJdbcDao implements TeamDao {
     @Override
     public List<Team> getAll() {
         LOG.trace("Obteniendo todos los equipos");
-        return jdbcTemplate.query("select t.*, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id order by t.ranking_position ASC",
+        return jdbcTemplate.query("select t.*, s.id as stadium_id, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id order by t.ranking_position ASC",
                 new TeamMapper(jdbcTemplate));
     }
 
@@ -43,7 +43,7 @@ public class TeamJdbcDao implements TeamDao {
     public Team getById(int id) {
         LOG.trace("Obteniendo el equipo con id {}", id);
         try {
-            return jdbcTemplate.queryForObject("select t.*, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id and t.id = ?",
+            return jdbcTemplate.queryForObject("select t.*, s.id as stadium_id, s.name as stadium_name from teams as t, stadiums as s where t.stadium_id = s.id and t.id = ?",
                     new Object[]{id}, new TeamMapper(jdbcTemplate));
         } catch (EmptyResultDataAccessException noResult) {
             LOG.info("No existe un equipo con id {}", id);
@@ -86,12 +86,28 @@ public class TeamJdbcDao implements TeamDao {
     private int getStadiumId(String stadiumName) {
         LOG.trace("Obteniendo id del estadio con nombre {}", stadiumName);
         try {
-            return jdbcTemplate.queryForObject("select id from stadiums where name = ?",
+            int stadiumId = jdbcTemplate.queryForObject("select id from stadiums where name = ?",
                     new Object[]{stadiumName}, Integer.class);
+            validateStadiumId(stadiumId);
+            return stadiumId;
         } catch (EmptyResultDataAccessException noResultException) {
             final String msg = "No existe un estadio con nombre " + stadiumName;
             LOG.error(msg);
             throw new IllegalArgumentException(msg);
         }
+    }
+
+    private void validateStadiumId(int stadiumId) {
+        if (isAnyTeamWithTheSameStadiumId(stadiumId)) {
+            final String msg = "Ya existe un equipo que juega en el estadio con id " + stadiumId;
+            LOG.error(msg);
+            throw new IllegalArgumentException(msg);
+        }
+    }
+
+    private boolean isAnyTeamWithTheSameStadiumId(int stadiumId) {
+        int teamConunt = jdbcTemplate.queryForObject("select count(*) from teams where stadium_id = ?",
+                new Object[]{stadiumId}, Integer.class);
+        return teamConunt > 0;
     }
 }

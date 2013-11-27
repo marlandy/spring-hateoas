@@ -36,7 +36,7 @@ public class PlayerJdbcDao implements PlayerDao {
     @Override
     public List<Player> getAll() {
         LOG.trace("Obteniendo todos los jugadores");
-        return jdbcTemplate.query("select p.*, t.name as team_name from players as p, teams as t where p.team_id = t.id order by p.name ASC",
+        return jdbcTemplate.query("select p.*, t.id as team_id, t.name as team_name from players as p, teams as t where p.team_id = t.id order by p.name ASC",
                 new PlayerMapper());
 
     }

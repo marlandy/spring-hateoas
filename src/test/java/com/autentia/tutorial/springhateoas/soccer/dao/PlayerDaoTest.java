@@ -60,7 +60,7 @@ public class PlayerDaoTest {
         player.setCountry("Italia");
         player.setGoals(3);
         player.setName("Nuevo jugador");
-        player.setCurrentTeam(new TeamShortInfo("F.C. Barcelona"));
+        player.setCurrentTeam(new TeamShortInfo(5001, "F.C. Barcelona"));
 
         int newPlayerId = playerDao.persist(player);
 
@@ -82,7 +82,7 @@ public class PlayerDaoTest {
         player.setCountry("Italia");
         player.setGoals(3);
         player.setName("Nuevo jugador");
-        player.setCurrentTeam(new TeamShortInfo("EQUIPO INEXISTENTE"));
+        player.setCurrentTeam(new TeamShortInfo(1003, "EQUIPO INEXISTENTE"));
 
         try {
             playerDao.persist(player);

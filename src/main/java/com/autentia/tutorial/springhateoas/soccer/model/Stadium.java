@@ -3,6 +3,11 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlRootElement
+@XmlType(propOrder = { "id", "name", "capacity", "city", "team"})
 public class Stadium {
 
     private int id;

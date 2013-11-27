@@ -64,7 +64,7 @@ public class TeamDaoTest {
         assertEquals(team.getName(), teamFromDB.getName());
         assertEquals(team.getFoundationYear(), teamFromDB.getFoundationYear());
         assertEquals(team.getRankingPosition(), teamFromDB.getRankingPosition());
-        assertEquals(team.getStadium(), teamFromDB.getStadium());
+        assertEquals(team.getStadium().getName(), teamFromDB.getStadium().getName());
 
         deleteTeamAndValidateDeletion(teamFromDB);
     }

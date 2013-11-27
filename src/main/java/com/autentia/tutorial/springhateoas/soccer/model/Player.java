@@ -4,19 +4,24 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
+
+@XmlRootElement
+@XmlType(propOrder = { "id", "name", "goals", "age", "country", "currentTeam"})
 public class Player {
 
     private int id;
 
     private String name;
 
-    private TeamShortInfo currentTeam;
+    private int goals;
 
     private int age;
 
     private String country;
 
-    private int goals;
+    private TeamShortInfo currentTeam;
 
     public int getId() {
         return id;

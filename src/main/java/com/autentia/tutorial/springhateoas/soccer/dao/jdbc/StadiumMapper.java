@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 
 public class StadiumMapper implements RowMapper<Stadium> {
@@ -29,18 +30,19 @@ public class StadiumMapper implements RowMapper<Stadium> {
         stadium.setCapacity(rs.getInt("capacity"));
         stadium.setCity(rs.getString("city"));
         stadium.setName(rs.getString("name"));
-        final String teamFromStadium = getTeamNameFromStadiumId(stadium.getId());
-        if (teamFromStadium != null) {
-            stadium.setTeam(new TeamShortInfo(teamFromStadium));
+        final Map<String, Object> idAndTeamFromStadium = getTeamNameFromStadiumId(stadium.getId());
+        if (idAndTeamFromStadium != null) {
+            stadium.setTeam(new TeamShortInfo((Integer)idAndTeamFromStadium.get("id"),
+                    (String) idAndTeamFromStadium.get("name")));
         }
         return stadium;
     }
 
-    private String getTeamNameFromStadiumId(int stadiumId) {
+    private Map<String, Object> getTeamNameFromStadiumId(int stadiumId) {
         LOG.trace("Obteniendo el nombre del equipo que juega en el estadio con id {}", stadiumId);
         try {
-            return jdbcTemplate.queryForObject("select name from teams where stadium_id = ?",
-                    new Object[]{stadiumId}, String.class);
+            return jdbcTemplate.queryForMap("select id, name from teams where stadium_id = ?",
+                    new Object[]{stadiumId});
         } catch (EmptyResultDataAccessException noResultException) {
             return null;
         }

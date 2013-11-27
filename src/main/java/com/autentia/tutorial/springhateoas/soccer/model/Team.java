@@ -3,8 +3,14 @@ package com.autentia.tutorial.springhateoas.soccer.model;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlType;
 import java.util.List;
 
+@XmlRootElement
+@XmlType(propOrder = { "id", "name", "foundationYear", "rankingPosition", "stadium", "players"})
 public class Team {
 
     private int id;
@@ -59,6 +65,8 @@ public class Team {
         this.stadium = stadium;
     }
 
+    @XmlElementWrapper(name = "players")
+    @XmlElement(name = "player")
     public List<PlayerShortInfo> getPlayers() {
         return players;
     }
