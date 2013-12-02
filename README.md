@@ -1,4 +1,4 @@
-# SPRING HATEOAS SAMPL #
+# SPRING HATEOAS SAMPLE #
 
 ## Environment: ##
 
